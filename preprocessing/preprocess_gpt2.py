@@ -6,14 +6,17 @@ This script handles preprocessing of datasets to be compatible with GPT-2 model'
 
 from transformers import GPT2Tokenizer
 
-def preprocess_data_for_gpt2():
-    """
-    Function to preprocess data for GPT-2 model.
-    """
-    # Placeholder for preprocessing logic
-    pass
+tokenizer = GPT2Tokenizer.from_pretrained("gpt2-medium")
 
-if __name__ == "__main__":
-    # Entry point of the script
-    preprocess_data_for_gpt2()
+def preprocess_for_gpt2(dataset):
+    """Tokenize data for GPT-2."""
+    def tokenize_example(example):
+        return tokenizer(example['article'], truncation=True, padding='max_length', max_length=512), tokenizer(example['summary'], truncation=True, padding='max_length', max_length=150)
+
+    return dataset.map(tokenize_example)
+
+# Preprocess datasets
+cnn_dailymail = preprocess_for_gpt2(cnn_dailymail)
+xsum = preprocess_for_gpt2(xsum)
+
  

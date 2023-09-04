@@ -6,14 +6,16 @@ This script handles preprocessing of datasets to be compatible with DistilBERT m
 
 from transformers import DistilBertTokenizer
 
-def preprocess_data_for_distilbert():
-    """
-    Function to preprocess data for DistilBERT model.
-    """
-    # Placeholder for preprocessing logic
-    pass
+tokenizer = DistilBertTokenizer.from_pretrained("distilbert-base-uncased")
 
-if __name__ == "__main__":
-    # Entry point of the script
-    preprocess_data_for_distilbert()
+def preprocess_for_distilbert(dataset):
+    """Tokenize data for DistilBERT."""
+    def tokenize_example(example):
+        return tokenizer(example['article'], truncation=True, padding='max_length', max_length=512), tokenizer(example['summary'], truncation=True, padding='max_length', max_length=150)
+
+    return dataset.map(tokenize_example)
+
+# Preprocess datasets
+cnn_dailymail = preprocess_for_distilbert(cnn_dailymail)
+xsum = preprocess_for_distilbert(xsum)
  

@@ -6,14 +6,15 @@ This script handles preprocessing of datasets to be compatible with T5 model's r
 
 from transformers import T5Tokenizer
 
-def preprocess_data_for_t5():
-    """
-    Function to preprocess data for T5 model.
-    """
-    # Placeholder for preprocessing logic
-    pass
+def preprocess_for_t5(dataset):
+    """Preprocess data for T5."""
+    def format_example(example):
+        return {
+            "input_text": f"summarize: {example['article']}",
+            "target_text": example['summary']
+        }
+    return dataset.map(format_example)
 
-if __name__ == "__main__":
-    # Entry point of the script
-    preprocess_data_for_t5()
- 
+# Preprocess datasets
+cnn_dailymail = preprocess_for_t5(cnn_dailymail)
+xsum = preprocess_for_t5(xsum)

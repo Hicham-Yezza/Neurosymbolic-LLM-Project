@@ -4,6 +4,9 @@
 numpy
 pandas
 
+# Filesystem Libraries
+fsspec>=0.9.0
+
 # Deep Learning and NLP Libraries
 transformers>=4.0.0
 torch
