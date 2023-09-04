@@ -1,0 +1,15 @@
+# Initial list of libraries required for the project and their versions 
+
+# General Libraries
+numpy
+pandas
+
+# Deep Learning and NLP Libraries
+transformers>=4.0.0
+torch
+tokenizers
+tqdm
+
+# Evaluation Metrics
+rouge
+bert-score
