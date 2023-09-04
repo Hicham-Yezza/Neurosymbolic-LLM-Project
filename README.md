@@ -17,3 +17,26 @@ This repository contains the code and resources for a project that aims to combi
 ## Setup
 1. Clone the repository: 
  
+git clone https://github.com/Hicham-Yezza/Neurosymbolic-LLM-Project.git
+
+2. Navigate to the project directory:
+
+cd Neurosymbolic-LLM-Project
+
+3. Install the required libraries:
+
+pip install -r requirements.txt
+
+## Usage
+
+Detailed usage instructions for preprocessing, training, and evaluation will be provided as the project progresses.
+
+## Author
+
+- **Hicham Yezza**
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+
+## Acknowledgements
