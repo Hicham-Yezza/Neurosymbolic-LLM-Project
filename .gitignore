@@ -1,6 +1,28 @@
+# Python byte compiled files
 __pycache__/
 *.pyc
+
+# Checkpoint and model files
 *.ckpt
 *.h5
+
+# Environment folder and files
 .env/
-data/ 
+V_NESY_LLM/
+
+# Dataset folder
+data/
+
+# OS specific files
+.DS_Store  # For macOS
+Thumbs.db  # For Windows
+
+# VS Code specific
+.vscode/
+
+# Other potential folders/files
+*.log
+*.egg-info/
+dist/
+build/
+
