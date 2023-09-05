@@ -11,20 +11,24 @@ HISTOGRAM_CONFIG = {
     'xsum': {'bins': 20, 'range': (0, 80)}
 }
 
-def load_and_print_dataset_info(dataset_name):
+def load_and_print_dataset_info(dataset_name, version=None):
     """
     Load a dataset and print its basic information.
     
     Parameters:
         dataset_name (str): Name of the dataset to be loaded.
+        version (str, optional): Version of the dataset. Default is None.
 
     Returns:
-        DatasetDict: The dataset loaded using HuggingFace's datasets library.
+        DatasetDict or None: The dataset loaded using HuggingFace's datasets library or None if there's an error.
     """
     try:
-        dataset = load_dataset(dataset_name)
+        if version:
+            dataset = load_dataset(dataset_name, version)
+        else:
+            dataset = load_dataset(dataset_name)
+        
         print(f"\n{dataset_name} dataset:")
-        # Loop through each split (train, test, validation) and print its size
         for split, data in dataset.items():
             print(f"{split} size: {len(data)}")
         return dataset
@@ -68,8 +72,13 @@ def plot_summary_lengths_histogram(data, title, dataset_name, subplot_position):
 
 if __name__ == "__main__":
     # Load datasets using the helper function
-    cnn_dailymail = load_and_print_dataset_info("cnn_dailymail")
+    cnn_dailymail = load_and_print_dataset_info("cnn_dailymail", "3.0.0")
     xsum = load_and_print_dataset_info("xsum")
+
+    # Check if the datasets are loaded correctly before accessing them
+    if cnn_dailymail is None or xsum is None:
+        print("Error: One or more datasets failed to load. Exiting...")
+        exit()
 
     # Accessing the "train" split for further analysis
     train_cnn_dailymail = cnn_dailymail["train"]
