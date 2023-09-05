@@ -3,6 +3,7 @@
 # General Libraries
 numpy
 pandas
+matplotlib
 
 # Filesystem Libraries
 fsspec>=0.9.0
@@ -12,7 +13,9 @@ transformers>=4.0.0
 torch
 tokenizers
 tqdm
+datasets
 
 # Evaluation Metrics
 rouge
 bert-score
+
