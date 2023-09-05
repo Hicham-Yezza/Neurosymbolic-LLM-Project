@@ -8,7 +8,7 @@ __pycache__/
 
 # Environment folder and files
 .env/
-V_NESY_LLM/
+venv_nesy_llm/
 
 # Dataset folder
 data/
