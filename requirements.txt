@@ -15,6 +15,7 @@ torch
 tokenizers
 tqdm
 datasets
+nltk>=3.5
 
 # Evaluation Metrics
 rouge
