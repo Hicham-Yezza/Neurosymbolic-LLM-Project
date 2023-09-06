@@ -2,26 +2,25 @@
 
 # Import necessary libraries
 import matplotlib.pyplot as plt
+import numpy as np
 from datasets import load_dataset
+from scipy import stats
 
 # Configuration for the histograms
-# This makes it easy to adjust settings for each dataset
 HISTOGRAM_CONFIG = {
     'cnn_dailymail': {'bins': 40, 'range': (0, 1300)},
     'xsum': {'bins': 20, 'range': (0, 80)}
 }
 
-def load_and_print_dataset_info(dataset_name, version=None):
-    """
-    Load a dataset and print its basic information.
-    
-    Parameters:
-        dataset_name (str): Name of the dataset to be loaded.
-        version (str, optional): Version of the dataset. Default is None.
+# Configuration for datasets and their keys
+DATASET_CONFIG = {
+    'cnn_dailymail': {'version': '3.0.0', 'article_key': 'article', 'summary_key': 'highlights'},
+    'xsum': {'version': None, 'article_key': 'document', 'summary_key': 'summary'}
+}
 
-    Returns:
-        DatasetDict or None: The dataset loaded using HuggingFace's datasets library or None if there's an error.
-    """
+SAMPLE_SIZE = 10000  # Default sample size
+
+def load_and_print_dataset_info(dataset_name, version=None):
     try:
         if version:
             dataset = load_dataset(dataset_name, version)
@@ -33,70 +32,79 @@ def load_and_print_dataset_info(dataset_name, version=None):
             print(f"{split} size: {len(data)}")
         return dataset
     except Exception as e:
-        print(f"Error loading {dataset_name} dataset: {e}")
+        print(f"Error loading {dataset_name} dataset. Check dataset name, version, or network connection. Detailed Error: {e}")
         return None
 
-def print_example_texts_and_summaries(dataset, article_key, summary_key):
-    """
-    Print example texts and summaries from a dataset.
-    
-    Parameters:
-        dataset (DatasetDict): The dataset from which to extract example texts and summaries.
-        article_key (str): The key to access the articles in the dataset.
-        summary_key (str): The key to access the summaries in the dataset.
-    """
-    example_text = dataset[article_key][0]
-    example_summary = dataset[summary_key][0]
-
-    print("\nExample text:")
-    print(example_text)
-    print("\nExample summary:")
-    print(example_summary)
+def print_example_texts_and_summaries(dataset, article_key, summary_key, num_examples=3):
+    for i in range(num_examples):
+        example_text = dataset[article_key][i]
+        example_summary = dataset[summary_key][i]
+        print(f"\nExample text {i+1}:")
+        print(example_text)
+        print(f"\nExample summary {i+1}:")
+        print(example_summary)
 
 def calculate_summary_lengths(dataset, summary_key):
-    """
-    Calculate lengths of summaries based on word count.
-    """
     return [len(summary.split()) for summary in dataset[summary_key]]
 
+def display_statistics(data, dataset_name):
+    mean = np.mean(data)
+    median = np.median(data)
+    mode = stats.mode(data).mode[0]
+    print(f"\nStatistics for {dataset_name}:")
+    print(f"Mean: {mean}")
+    print(f"Median: {median}")
+    print(f"Mode: {mode}")
+
+def draw_mean_median_lines(data):
+    """Helper function to draw mean and median lines on a histogram."""
+    mean = np.mean(data)
+    median = np.median(data)
+    plt.axvline(mean, color='r', linestyle='--')
+    plt.axvline(median, color='g', linestyle='-')
+    plt.legend({'Mean': mean, 'Median': median})
+
 def plot_summary_lengths_histogram(data, title, dataset_name, subplot_position):
-    """
-    Plot histogram for summary lengths based on provided configuration.
-    """
     config = HISTOGRAM_CONFIG.get(dataset_name)
     plt.subplot(*subplot_position)
     plt.hist(data, bins=config['bins'], range=config['range'], edgecolor="k", alpha=0.7)
+    draw_mean_median_lines(data)  # Use the helper function
     plt.xlabel("Summary Length")
     plt.ylabel("Frequency")
     plt.title(title)
 
 if __name__ == "__main__":
-    # Load datasets using the helper function
-    cnn_dailymail = load_and_print_dataset_info("cnn_dailymail", "3.0.0")
-    xsum = load_and_print_dataset_info("xsum")
+    # Using the dataset configurations to manage dataset-specific attributes.
+    datasets = {}
+    for dataset_name, config in DATASET_CONFIG.items():
+        dataset = load_and_print_dataset_info(dataset_name, config['version'])
+        if dataset:
+            datasets[dataset_name] = dataset
 
-    # Check if the datasets are loaded correctly before accessing them
-    if cnn_dailymail is None or xsum is None:
-        print("Error: One or more datasets failed to load. Exiting...")
-        exit()
+    if 'cnn_dailymail' in datasets:
+        train_cnn_dailymail = datasets['cnn_dailymail'].get('train')
+        if train_cnn_dailymail:
+            print("\nCNN/Daily Mail examples:")
+            print_example_texts_and_summaries(train_cnn_dailymail, DATASET_CONFIG['cnn_dailymail']['article_key'], DATASET_CONFIG['cnn_dailymail']['summary_key'])
 
-    # Accessing the "train" split for further analysis
-    train_cnn_dailymail = cnn_dailymail["train"]
-    train_xsum = xsum["train"]
-
-    # Print example articles and summaries for both datasets
-    print("\nCNN/Daily Mail examples:")
-    print_example_texts_and_summaries(train_cnn_dailymail, "article", "highlights")
-    print("\nXSum examples:")
-    print_example_texts_and_summaries(train_xsum, "document", "summary")
-
-    # Calculate summary lengths using the helper function
-    summary_lengths_cnn_dailymail = calculate_summary_lengths(train_cnn_dailymail, "highlights")
-    summary_lengths_xsum = calculate_summary_lengths(train_xsum, "summary")
-
+    if 'xsum' in datasets:
+        train_xsum = datasets['xsum'].get('train')
+        if train_xsum:
+            print("\nXSum examples:")
+            print_example_texts_and_summaries(train_xsum, DATASET_CONFIG['xsum']['article_key'], DATASET_CONFIG['xsum']['summary_key'])
+    
+    summary_lengths = {}
+    for dataset_name, dataset_data in datasets.items():
+        train_data = dataset_data.get('train')
+        if train_data:
+            lengths = calculate_summary_lengths(train_data, DATASET_CONFIG[dataset_name]['summary_key'])
+            summary_lengths[dataset_name] = lengths
+            display_statistics(lengths, dataset_name)
+    
     # Plot histograms for summary lengths of each dataset
     plt.figure(figsize=(10, 6))
-    plot_summary_lengths_histogram(summary_lengths_cnn_dailymail, "Distribution of Summary Lengths (CNN/Daily Mail)", 'cnn_dailymail', (2, 1, 1))
-    plot_summary_lengths_histogram(summary_lengths_xsum, "Distribution of Summary Lengths (XSum)", 'xsum', (2, 1, 2))
+    for index, (dataset_name, lengths) in enumerate(summary_lengths.items(), 1):
+        plot_summary_lengths_histogram(lengths, f"Distribution of Summary Lengths ({dataset_name})", dataset_name, (2, 1, index))
     plt.tight_layout()
     plt.show()
+
