@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from datasets import load_dataset
 from scipy import stats
+import os
 
 # Configuration for the histograms
 HISTOGRAM_CONFIG = {
@@ -48,9 +49,17 @@ def calculate_summary_lengths(dataset, summary_key):
     return [len(summary.split()) for summary in dataset[summary_key]]
 
 def display_statistics(data, dataset_name):
+    mode_data = stats.mode(data).mode
+
+    # Check if mode_data is an array or scalar and handle accordingly
+    if isinstance(mode_data, (list, np.ndarray)) and len(mode_data) > 0:
+        mode = mode_data[0]
+    else:
+        mode = mode_data
+
     mean = np.mean(data)
     median = np.median(data)
-    mode = stats.mode(data).mode[0]
+    
     print(f"\nStatistics for {dataset_name}:")
     print(f"Mean: {mean}")
     print(f"Median: {median}")
@@ -105,6 +114,16 @@ if __name__ == "__main__":
     plt.figure(figsize=(10, 6))
     for index, (dataset_name, lengths) in enumerate(summary_lengths.items(), 1):
         plot_summary_lengths_histogram(lengths, f"Distribution of Summary Lengths ({dataset_name})", dataset_name, (2, 1, index))
+
+try:
+    if not os.path.exists('Outputs'):
+        os.makedirs('Outputs')
+except Exception as e:
+    print(f"Error creating 'Outputs' directory: {e}")
+
+try:
+    plt.savefig(f'Outputs/histograms_combined.png')
+except Exception as e:
+    print(f"Error saving histogram: {e}")
     plt.tight_layout()
     plt.show()
-
