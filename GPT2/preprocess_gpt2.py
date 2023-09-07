@@ -5,6 +5,8 @@ This script handles preprocessing of datasets to be compatible with GPT-2 model'
 """
 
 from transformers import GPT2Tokenizer
+from ..preprocessing import *
+
 
 tokenizer = GPT2Tokenizer.from_pretrained("gpt2-medium")
 

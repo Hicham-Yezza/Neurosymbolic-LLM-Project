@@ -5,6 +5,8 @@ This script handles preprocessing of datasets to be compatible with T5 model's r
 """
 
 from transformers import T5Tokenizer
+from ..preprocessing import *
+
 
 def preprocess_for_t5(dataset):
     """Preprocess data for T5."""
