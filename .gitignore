@@ -25,4 +25,5 @@ Thumbs.db  # For Windows
 *.egg-info/
 dist/
 build/
+Fine_tuned_models/
 
