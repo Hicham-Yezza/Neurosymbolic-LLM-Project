@@ -20,3 +20,6 @@ nltk>=3.5
 # Evaluation Metrics
 rouge
 bert-score
+
+# logging
+wandb
