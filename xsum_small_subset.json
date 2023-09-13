@@ -1,0 +1,17 @@
+{
+    "train": [
+        "document",
+        "summary",
+        "id"
+    ],
+    "validation": [
+        "document",
+        "summary",
+        "id"
+    ],
+    "test": [
+        "document",
+        "summary",
+        "id"
+    ]
+}

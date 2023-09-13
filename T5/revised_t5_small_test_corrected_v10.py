@@ -1,13 +1,21 @@
 import torch
 from datasets import load_dataset, load_metric
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, Seq2SeqTrainingArguments, Seq2SeqTrainer, DataCollatorForSeq2Seq, pipeline
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, Seq2SeqTrainingArguments, Seq2SeqTrainer, DataCollatorForSeq2Seq
 
-# Check for GPU availability
-use_cuda = torch.cuda.is_available()
-device = "cuda" if use_cuda else "cpu"
-print(f"Using device: {device}")
+config = {
+    "tokenizer_name_or_path": "t5-small",
+    "model_name_or_path": "t5-small",
+    "batch_size": 4,
+    "max_length": 512,
+    "num_train_epochs": 1,
+    "output_dir": "fine_tuned_T5",
+    "eval_steps": 100,
+    "logging_steps": 100,
+    "save_steps": 1000,
+    "per_device_train_batch_size": 4,
+}
 
-def preprocess_data(dataset, tokenizer_name_or_instance="t5-small", max_length=512, batch_size=4):
+def preprocess_data(dataset, tokenizer_name_or_instance=, max_length, batch_size):
     if isinstance(tokenizer_name_or_instance, str):
         tokenizer = AutoTokenizer.from_pretrained(tokenizer_name_or_instance)
     else:
@@ -28,9 +36,9 @@ def preprocess_data(dataset, tokenizer_name_or_instance="t5-small", max_length=5
     return dataloader, tokenizer
 
 
-def fine_tune_t5(dataloader, tokenizer, model_name_or_path="t5-small", output_dir="fine_tuned_T5", 
-                 num_train_epochs=1, per_device_train_batch_size=4, eval_steps=100, logging_steps=100, 
-                 save_steps=5000, max_length=512):
+def fine_tune_t5(dataloader, tokenizer, model_name_or_path, output_dir, 
+                 num_train_epochs, per_device_train_batch_size, eval_steps, logging_steps, 
+                 save_steps, max_length):
 
     model = AutoModelForSeq2SeqLM.from_pretrained(model_name_or_path)
     training_args = Seq2SeqTrainingArguments(
@@ -67,19 +75,39 @@ def evaluate_model(dataset, tokenizer, model):
     return rouge_scores
 
 def main():
-    # Load the XSum dataset
-    xsum_dataset = load_dataset("xsum")
-    # Subset the dataset for testing purposes (remove this line for the full dataset)
-    xsum_dataset = xsum_dataset["train"].shuffle(seed=42).select([i for i in range(100)])
-    # Preprocess the dataset
-    dataloader, tokenizer = preprocess_data(xsum_dataset)
-    # Fine-tune T5-small
-    model = fine_tune_t5(dataloader, tokenizer)
-    # Evaluate the model using ROUGE scores
-    rouge_scores = evaluate_model(xsum_dataset, tokenizer, model)
-    # Print ROUGE scores
-    for key, value in rouge_scores.items():
-        print(f"{key}: {value.mid.fmeasure:.4f}")
+
+  # Load the full XSum dataset
+  xsum_dataset = load_dataset("xsum") 
+  
+  # Use the provided training, validation and test splits
+  train_dataset = xsum_dataset['train'] 
+  val_dataset = xsum_dataset['validation']
+  test_dataset = xsum_dataset['test']
+
+   # Preprocess only the training data
+    train_dataloader, tokenizer = preprocess_data(train_dataset, 
+                                                  config["tokenizer_name_or_path"], 
+                                                  config["max_length"], 
+                                                  config["batch_size"])
+
+  # Fine-tune model on the training set
+    model = fine_tune_t5(train_dataloader, tokenizer, 
+                         config["model_name_or_path"], 
+                         config["output_dir"], 
+                         config["num_train_epochs"], 
+                         config["per_device_train_batch_size"], 
+                         config["eval_steps"], 
+                         config["logging_steps"], 
+                         config["save_steps"], 
+                         config["max_length"])
+
+  # Evaluate on the validation set during training 
+  rouge_scores = evaluate_model(val_dataset, tokenizer, model)
+  print("Validation ROUGE Scores:", rouge_scores)
+
+  # Evaluate on the test set after training
+  test_rouge_scores = evaluate_model(test_dataset, tokenizer, model)
+  print("Test ROUGE Scores:", test_rouge_scores)
 
 if __name__ == "__main__":
     main()

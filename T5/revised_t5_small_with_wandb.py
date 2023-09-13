@@ -1,4 +1,5 @@
 import torch
+import wandb
 from datasets import load_dataset, load_metric
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, Seq2SeqTrainingArguments, Seq2SeqTrainer, DataCollatorForSeq2Seq, pipeline
 
@@ -6,6 +7,10 @@ from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, Seq2SeqTrainingAr
 use_cuda = torch.cuda.is_available()
 device = "cuda" if use_cuda else "cpu"
 print(f"Using device: {device}")
+
+# Initialize Weights and Biases
+wandb.init(project="t5-small-xsum", name="run-name")
+
 
 def preprocess_data(dataset, tokenizer_name_or_instance="t5-small", max_length=512, batch_size=4):
     if isinstance(tokenizer_name_or_instance, str):
@@ -30,7 +35,7 @@ def preprocess_data(dataset, tokenizer_name_or_instance="t5-small", max_length=5
 
 def fine_tune_t5(dataloader, tokenizer, model_name_or_path="t5-small", output_dir="fine_tuned_T5", 
                  num_train_epochs=1, per_device_train_batch_size=4, eval_steps=100, logging_steps=100, 
-                 save_steps=5000, max_length=512):
+                 save_steps=1000, max_length=512):
 
     model = AutoModelForSeq2SeqLM.from_pretrained(model_name_or_path)
     training_args = Seq2SeqTrainingArguments(
@@ -42,7 +47,9 @@ def fine_tune_t5(dataloader, tokenizer, model_name_or_path="t5-small", output_di
         logging_steps=logging_steps,
         save_steps=save_steps,
         save_total_limit=2,
-    )
+    ,
+    # Enable logging to Weights and Biases
+report_to="wandb",)
     data_collator = DataCollatorForSeq2Seq(
         tokenizer=tokenizer, model=model, padding=True, max_length=max_length
     )
@@ -70,7 +77,7 @@ def main():
     # Load the XSum dataset
     xsum_dataset = load_dataset("xsum")
     # Subset the dataset for testing purposes (remove this line for the full dataset)
-    xsum_dataset = xsum_dataset["train"].shuffle(seed=42).select([i for i in range(100)])
+    # xsum_dataset = xsum_dataset["train"].shuffle(seed=42).select([i for i in range(100)])
     # Preprocess the dataset
     dataloader, tokenizer = preprocess_data(xsum_dataset)
     # Fine-tune T5-small
@@ -83,3 +90,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# Log metrics to wandb
+wandb.log(metrics)
+
