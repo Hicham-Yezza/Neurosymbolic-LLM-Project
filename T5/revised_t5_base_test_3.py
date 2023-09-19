@@ -5,7 +5,7 @@ from datasets import load_dataset, load_metric
 from transformers import (AutoTokenizer, AutoModelForSeq2SeqLM, Seq2SeqTrainingArguments,
                           Seq2SeqTrainer, DataCollatorForSeq2Seq, pipeline)
 
-# Check if CUDA (NVIDIA GPU acceleration) is available and set the device accordingly
+# Check if CUDA is available and set the device accordingly
 use_cuda = torch.cuda.is_available()
 device = "cuda" if use_cuda else "cpu"
 print(f"Using device: {device}")
