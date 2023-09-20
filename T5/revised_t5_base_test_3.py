@@ -98,7 +98,7 @@ def main():
 
     # Load the XSum dataset
     xsum_dataset = load_dataset("xsum")
-    # Subset the dataset for testing purposes (can be removed for the full dataset)
+    # Subset the dataset for testing purposes
     xsum_dataset = xsum_dataset["train"].shuffle(seed=42).select([i for i in range(100)])
 
     # Preprocess the dataset
