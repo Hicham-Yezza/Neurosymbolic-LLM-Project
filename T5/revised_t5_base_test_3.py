@@ -108,6 +108,7 @@ def main():
     model = fine_tune_t5(dataloader, tokenizer)
 
     # Evaluate the model and compute ROUGE scores
+    # Use Val subset of XSum
     rouge_scores = evaluate_model(xsum_dataset, tokenizer, model)
     for key, value in rouge_scores.items():
         print(f"{key}: {value.mid.fmeasure:.4f}")
